@@ -1,16 +1,12 @@
 
 #include "crow.h"
-#include <sqlite_orm/sqlite_orm.h>
-#include <iostream>
+#include "../include/database/Clubhub.hpp"
+#include "../include/Controller/Student.hpp"
 
 int main()
 {
     crow::SimpleApp app;
-
-    CROW_ROUTE(app, "/")
-    ([] {
-        return "ClubHub API is running!";
-    });
-
+    auto db=initDatabase();
+    RegisterStudentRoute(app,db);
     app.port(8080).multithreaded().run();
 }

@@ -1,8 +1,10 @@
+#pragma once
 #include <sqlite_orm/sqlite_orm.h>
 #include "../Models/Student.hpp"
 #include "../Models/TopUser.hpp"
 #include "../Models/Token.hpp"
-inline auto createStorage(const std::string& path ="data/Clubhub.db"){
+#include <string>
+inline auto createStorage(const std::string& path ="../data/Clubhub.db"){
     using namespace sqlite_orm;
     return make_storage(
         path,
@@ -13,6 +15,7 @@ inline auto createStorage(const std::string& path ="data/Clubhub.db"){
             make_column("name",&Student::name),
             make_column("studentPhone",&Student::studentPhone,unique()),
             make_column("password",&Student::password),
+            make_column("email",&Student::email),
             make_column("createdAt",&Student::createdAt)
         ),
         make_table(
@@ -38,7 +41,7 @@ inline auto createStorage(const std::string& path ="data/Clubhub.db"){
 }
 using Storage=decltype(createStorage());
     inline Storage initDatabase(){
-        auto storage = createStorage();
+        auto storage=createStorage();
         storage.sync_schema();
         return storage;
     }

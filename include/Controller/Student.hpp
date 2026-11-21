@@ -16,6 +16,7 @@ inline crow::json::wvalue ToJson(const Student& student){
     result["student_id"]=student.studentId;
     result["name"]=student.name;
     result["email"]=student.email;
+    result["password"]=student.password;
     result["createdAt"]=student.createdAt;
     return result;
 }
@@ -35,11 +36,12 @@ inline void RegisterStudentRoute(crow::SimpleApp & app,Storage & db){
             student.studentId=body["studentId"].s();
             student.email=body["email"].s();
             student.name=body["name"].s();
+            student.password=body["password"].s();
+            student.studentPhone=body["studentPhone"].s();
             student.createdAt=currentDate();
             auto id =db.insert(student);
             student.id=static_cast<int>(id);
             crow::json::wvalue result;
-            result["message"]="Created sucessfully";
             result=ToJson(student);
             return crow::response(201,result);
 
@@ -53,8 +55,7 @@ inline void RegisterStudentRoute(crow::SimpleApp & app,Storage & db){
         try{
             auto student=db.get_all<Student>();
             crow::json::wvalue result;
-            result["messsage"]="Fetch seccessfully";
-            int index=1;
+            int index=0;
             for(const Student& s: student){
                 result[index++]=ToJson(s);
             }
@@ -66,7 +67,6 @@ inline void RegisterStudentRoute(crow::SimpleApp & app,Storage & db){
     CROW_ROUTE(app,"/api/Student/<int>")([&db](int id ){
         auto student=db.get<Student>(id);
         crow::json::wvalue result;
-        result["message"]="Fetch sucessfully";
         result=ToJson(student);
         return crow::response(201,result);
     });
