@@ -36,8 +36,33 @@ FetchContent_Declare(
     SOURCE_SUBDIR _none
 )
 
+# libsodium
+FetchContent_Declare(
+    Sodium
+    GIT_REPOSITORY https://github.com/robinlinden/libsodium-cmake.git
+    GIT_TAG e5b985ad0dd235d8c4307ea3a385b45e76c74c6a
+)
+
+set(SODIUM_DISABLE_TESTS ON CACHE BOOL "" FORCE)
+
+# JWT-C++
+set(JWT_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+
+FetchContent_Declare(
+    jwt-cpp
+    GIT_REPOSITORY https://github.com/Thalhammer/jwt-cpp.git
+    GIT_TAG v0.7.2
+    GIT_SHALLOW TRUE
+)
+
 # Download dependencies
-FetchContent_MakeAvailable(asio crow sqlite_orm)
+FetchContent_MakeAvailable(
+    asio
+    crow
+    sqlite_orm
+    Sodium
+    jwt-cpp
+)
 
 # SQLite database
 find_package(SQLite3 REQUIRED)
@@ -63,6 +88,8 @@ add_executable(clubhub
 target_link_libraries(clubhub PRIVATE
     crow_deps
     SQLite3::SQLite3
+    sodium
+    jwt-cpp::jwt-cpp
 )
 
 # Windows networking libraries

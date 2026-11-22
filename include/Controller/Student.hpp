@@ -4,13 +4,14 @@
 #include "../database/Clubhub.hpp"
 #include <sstream>
 #include <ctime>
+#include "../service/hash.hpp"
 inline std::string currentDate(){
     std::time_t now = std::time(nullptr);
     char buffer[20];
     std::strftime(buffer, sizeof(buffer), "%Y-%m-%d", std::localtime(&now));
     return buffer;
 }
-inline crow::json::wvalue ToJson(const Student& student){
+inline crow::json::wvalue ToJson(const Student& student ){
     crow::json::wvalue result;
     result["id"]=student.id;
     result["student_id"]=student.studentId;
@@ -21,7 +22,7 @@ inline crow::json::wvalue ToJson(const Student& student){
     return result;
 }
 inline void RegisterStudentRoute(crow::SimpleApp & app,Storage & db){
-    CROW_ROUTE(app,"/api/Student")
+    CROW_ROUTE(app,"/api/Student/Register")
     .methods(crow::HTTPMethod::Post)
     ([&db](const crow::request& req)  {
         auto body= crow::json::load(req.body);
@@ -32,11 +33,12 @@ inline void RegisterStudentRoute(crow::SimpleApp & app,Storage & db){
             return crow::response(400,"Plz input all the option");
         }
         try{
+            init();
             Student student;
             student.studentId=body["studentId"].s();
             student.email=body["email"].s();
             student.name=body["name"].s();
-            student.password=body["password"].s();
+            student.password=hash(body["password"].s());
             student.studentPhone=body["studentPhone"].s();
             student.createdAt=currentDate();
             auto id =db.insert(student);

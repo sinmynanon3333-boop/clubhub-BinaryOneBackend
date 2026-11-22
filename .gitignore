@@ -7,5 +7,9 @@ build/
 dist/
 out/
 
-#
+#data
 data/
+
+.env
+.env.*
+*.env
