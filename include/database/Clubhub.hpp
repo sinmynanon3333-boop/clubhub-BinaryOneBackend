@@ -34,9 +34,8 @@ inline auto createStorage(const std::string& path ="../data/Clubhub.db"){
         make_column("owner_type", &Token::role),
         make_column("owner_id", &Token::OwerId),
         make_column("created_at", &Token::createdAt),
-        make_column("expires_at", &Token::experiedAt),
         make_column("revoked", &Token::revoked)
-)
+    )
     );
 }
 using Storage=decltype(createStorage());

@@ -5,6 +5,11 @@
 #include <sstream>
 #include <ctime>
 #include "../service/hash.hpp"
+#include "../Models/Token.hpp"
+#include "../service/KeyGenerate.hpp"
+#include <sqlite_orm/sqlite_orm.h>
+#include <string>
+using namespace sqlite_orm;
 inline std::string currentDate(){
     std::time_t now = std::time(nullptr);
     char buffer[20];
@@ -43,8 +48,16 @@ inline void RegisterStudentRoute(crow::SimpleApp & app,Storage & db){
             student.createdAt=currentDate();
             auto id =db.insert(student);
             student.id=static_cast<int>(id);
+            Token token;
+            token.OwerId=student.id;
+            token.createdAt=currentDate();
+            std::string generated=generateToken();
+            token.tokenHash=hash(generated);
+            db.insert(token);
             crow::json::wvalue result;
-            result=ToJson(student);
+            result["message"]="fetch done";
+            result["data"]=ToJson(student);
+            result["token"]=generated;
             return crow::response(201,result);
 
         }catch(const std::exception& e){
@@ -66,11 +79,25 @@ inline void RegisterStudentRoute(crow::SimpleApp & app,Storage & db){
             return crow::response(500,"sever is not working ");
         }
     });
-    CROW_ROUTE(app,"/api/Student/<int>")([&db](int id ){
-        auto student=db.get<Student>(id);
+    // ?Fix how to make it compare with int and string or id and token to make it more secure 
+    //! And fixx a ton of thing
+    CROW_ROUTE(app,"/api/Student/<int>/<string>")([&db](int id,std::string token ){
+        Token tok;
+        std::string hashed=hash(token);
+        auto user=db.get<Token>(where(c(&Token::tokenHash)==hashed));
+        auto userwithID=db.get<Token>(id);
+        if(user.OwerId==id){
+            crow::json::wvalue json;
+            json["id"]=user.OwerId;
+            json["tokenhash"]=user.tokenHash;
+            json["data"]=user.OwerId;   
+            return crow::response(201,json);
+        }
         crow::json::wvalue result;
-        result=ToJson(student);
-        return crow::response(201,result);
+        result["id"]=userwithID.id;
+        result["owerId"]=userwithID.OwerId;
+        result["what the hell"]=userwithID.tokenHash;
+        return crow::response(401,result);
     });
     CROW_ROUTE(app,"/api/Students/<int>").methods(crow::HTTPMethod::Delete)([&db](int id){
         try{
@@ -99,4 +126,4 @@ inline void RegisterStudentRoute(crow::SimpleApp & app,Storage & db){
             return crow::response(500,"Server not working right now");
         }
     });
-}
+};
